@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>beyond 背景メーカー（.beyond用）</title>
+<style>
+  :root{
+    --bg0:#d7f0ff;
+    --bg1:#fbfeff;
+    --text:#081225;
+    --muted:#395270;
+    --line:#08122518;
+    --card: rgba(255,255,255,.78);
+    --shadow: 0 22px 60px rgba(10,19,42,.16);
+    --radius: 20px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Meiryo", sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(255,255,255,.92), transparent 60%),
+      radial-gradient(1100px 900px at 50% 65%, rgba(214,190,160,.32), transparent 62%),
+      linear-gradient(180deg, var(--bg0), var(--bg1));
+    overflow-x:hidden;
+  }
+
+  header{
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 22px 16px 10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap: 12px;
+  }
+  h1{
+    margin:0;
+    font-size: clamp(20px, 3.2vw, 34px);
+    letter-spacing:.06em;
+    line-height:1.08;
+  }
+  .sub{margin:8px 0 0; color:var(--muted); font-size:13.5px; line-height:1.6;}
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid var(--line);
+    padding: 8px 10px;
+    border-radius:999px;
+    background: rgba(255,255,255,.65);
+    color: var(--muted);
+    font-size: 12px;
+    white-space:nowrap;
+    box-shadow: 0 10px 24px rgba(10,19,42,.08);
+  }
+  .dot{width:8px;height:8px;border-radius:50%; background:#f08c00; box-shadow:0 0 0 4px rgba(240,140,0,.16);}
+
+  main{
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 12px 16px 44px;
+    display:grid;
+    grid-template-columns: 1fr 440px;
+    gap: 16px;
+    align-items:start;
+  }
+  @media (max-width: 980px){
+    main{grid-template-columns:1fr;}
+  }
+
+  .card{
+    border-radius: var(--radius);
+    border:1px solid var(--line);
+    background: var(--card);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+    overflow:hidden;
+    position:relative;
+  }
+  .pad{padding: 14px 14px;}
+
+  /* Preview stage */
+  .stage{padding: 14px; min-height: 650px;}
+  .stageInner{
+    position:relative;
+    height: 610px;
+    border-radius: 22px;
+    border: 1px solid rgba(8,18,37,.12);
+    background:
+      radial-gradient(900px 220px at 50% 8%, rgba(255,255,255,.82), transparent 55%),
+      radial-gradient(900px 600px at 50% 90%, rgba(214,190,160,.28), transparent 60%),
+      linear-gradient(180deg, rgba(255,255,255,.44), rgba(8,18,37,.06));
+    overflow:hidden;
+  }
+  .titleCenter{
+    position:absolute; left:50%; top: 16px; transform: translateX(-50%);
+    text-align:center; pointer-events:none; z-index: 30;
+  }
+  .titleCenter .big{font-weight:950; letter-spacing:.08em; font-size: 14px; opacity:.95;}
+  .titleCenter .small{margin-top:6px; font-size:12px; color: rgba(57,82,112,.95);}
+
+  .doorway{
+    position:absolute;
+    left:50%; top: 56%;
+    transform: translate(-50%, -50%);
+    width: min(740px, 94%);
+    height: 82%;
+    border-radius: 26px;
+    border: 1px solid rgba(8,18,37,.18);
+    background: rgba(255,255,255,.18);
+    box-shadow:
+      inset 0 0 0 2px rgba(255,255,255,.34),
+      0 28px 60px rgba(10,19,42,.14);
+    overflow:hidden;
+  }
+  .beyondPreview{
+    position:absolute; inset:0;
+    transform: scale(1.02);
+    opacity: 1;
+    transition: filter .2s ease;
+  }
+
+  /* door edges mock */
+  .frame{
+    position:absolute; inset:0; pointer-events:none;
+    background:
+      linear-gradient(90deg, rgba(8,18,37,.10), transparent 20%),
+      linear-gradient(270deg, rgba(8,18,37,.10), transparent 20%),
+      radial-gradient(800px 300px at 50% 0%, rgba(255,255,255,.18), transparent 60%);
+    mix-blend-mode: multiply;
+    opacity:.55;
+  }
+
+  /* Silhouette mock */
+  .sil{
+    position:absolute;
+    left:50%; top:56%;
+    transform: translate(-50%, -50%);
+    width: min(240px, 46%);
+    height: 62%;
+    filter: drop-shadow(0 18px 30px rgba(10,19,42,.18));
+    pointer-events:none;
+    z-index: 10;
+    opacity:.90;
+  }
+  .sil .head{
+    position:absolute; top: 12%;
+    width: 34%; height: 22%;
+    left:50%; transform: translateX(-50%);
+    border-radius:999px;
+    background: rgba(8,18,37,.92);
+  }
+  .sil .body{
+    position:absolute; top: 28%;
+    width: 72%; height: 64%;
+    left:50%; transform: translateX(-50%);
+    border-radius: 120px 120px 30px 30px;
+    background: rgba(8,18,37,.92);
+  }
+  .sil .q{
+    position:absolute; top: 30%;
+    left:50%; transform: translateX(-50%);
+    font-weight: 950;
+    font-size: clamp(64px, 10vw, 92px);
+    line-height: 1;
+    color: rgba(255,255,255,.96);
+    text-shadow: 0 10px 30px rgba(0,0,0,.22);
+  }
+
+  /* Controls */
+  .grid{display:grid; gap: 10px;}
+  .row{
+    display:grid;
+    grid-template-columns: 1fr 150px;
+    gap: 10px;
+    align-items:center;
+    padding: 10px 10px;
+    border-radius: 16px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.72);
+    box-shadow: 0 10px 18px rgba(10,19,42,.06);
+  }
+  .row label{font-size:12px; color: rgba(57,82,112,.95); font-weight: 900; letter-spacing:.06em;}
+  .row .val{justify-self:end; font-feature-settings:"tnum"; font-variant-numeric: tabular-nums; color: rgba(8,18,37,.90); font-weight: 900;}
+  input[type="range"]{width:100%;}
+  input[type="color"]{
+    width: 100%;
+    height: 40px;
+    border:1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(255,255,255,.82);
+    padding: 4px;
+    cursor:pointer;
+  }
+  select{
+    width:100%;
+    padding: 10px 10px;
+    border-radius: 14px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.78);
+    font-weight: 900;
+    color: rgba(8,18,37,.92);
+  }
+  .btns{
+    display:flex; flex-wrap:wrap; gap:10px;
+    margin-top: 8px;
+  }
+  .btn{
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,.82);
+    color: rgba(8,18,37,.92);
+    font-weight: 950;
+    letter-spacing: .04em;
+    cursor:pointer;
+    user-select:none;
+    transition: transform .12s ease, background .12s ease;
+    box-shadow: 0 10px 22px rgba(10,19,42,.08);
+  }
+  .btn:hover{ transform: translateY(-1px); background: rgba(255,255,255,.94); }
+  .btn:active{ transform: translateY(0px) scale(.99); }
+  .btn.primary{
+    border-color: rgba(18,184,134,.22);
+    background: linear-gradient(135deg, rgba(99,230,190,.42), rgba(77,171,247,.22));
+  }
+  textarea{
+    width:100%;
+    min-height: 240px;
+    resize: vertical;
+    padding: 12px;
+    border-radius: 16px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.78);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    color: rgba(8,18,37,.92);
+    box-shadow: inset 0 0 0 1px rgba(8,18,37,.03);
+  }
+  .note{
+    margin-top: 10px;
+    color: rgba(57,82,112,.92);
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 10px 12px;
+    border-radius: 16px;
+    border: 1px dashed rgba(8,18,37,.18);
+    background: rgba(255,255,255,.55);
+  }
+  .tiny{font-size:11px; color: rgba(57,82,112,.88);}
+  .two{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
+  @media (max-width: 980px){ .two{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>.beyond 背景メーカー（扉の奥）</h1>
+    <div class="sub">あなたのゲームの <b>.beyond</b> に貼るCSSを作るサイト。調整 → コピーで完了。</div>
+  </div>
+  <div class="pill"><span class="dot"></span><span>Luxury Door / Beyond</span></div>
+</header>
+
+<main>
+  <!-- Preview -->
+  <section class="card">
+    <div class="stage">
+      <div class="stageInner">
+        <div class="titleCenter">
+          <div class="big">PREVIEW</div>
+          <div class="small">扉が開いた後の「奥」をここで調整</div>
+        </div>
+
+        <div class="doorway">
+          <div class="beyondPreview" id="beyond"></div>
+          <div class="sil">
+            <div class="head"></div><div class="body"></div><div class="q">?</div>
+          </div>
+          <div class="frame"></div>
+        </div>
+      </div>
+
+      <div class="note">
+        ✅ 「CSSコピー」→ あなたのゲームの <b>.beyond</b> の <b>background:</b> を丸ごと置換。<br/>
+        <span class="tiny">※ opacity/transform/transition は元のままでOK（この出力にも同梱）</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Controls -->
+  <aside class="card">
+    <div class="pad">
+      <div class="grid">
+
+        <div class="row">
+          <div>
+            <label>プリセット</label>
+            <div class="tiny">まずは雰囲気を決める</div>
+          </div>
+          <select id="preset">
+            <option value="mystic">神秘（白光＋砂岩）</option>
+            <option value="heaven">天国（白＋薄青）</option>
+            <option value="cave">洞窟（砂岩強め）</option>
+            <option value="sunset">夕焼け（橙＋紫）</option>
+          </select>
+        </div>
+
+        <div class="two">
+          <div class="row">
+            <div><label>上の光 色</label><div class="tiny">top glow color</div></div>
+            <input type="color" id="cTop" value="#ffffff">
+          </div>
+          <div class="row">
+            <div><label>砂岩 色</label><div class="tiny">sandstone color</div></div>
+            <input type="color" id="cSand" value="#d6bea0">
+          </div>
+        </div>
+
+        <div class="two">
+          <div class="row">
+            <div><label>ベース上 色</label><div class="tiny">base top</div></div>
+            <input type="color" id="cBase0" value="#ffffff">
+          </div>
+          <div class="row">
+            <div><label>ベース下 色</label><div class="tiny">base bottom</div></div>
+            <input type="color" id="cBase1" value="#ffffff">
+          </div>
+        </div>
+
+        <div class="row">
+          <div><label>上の光 強さ</label><div class="tiny">top glow intensity</div></div>
+          <div class="val"><span id="vTopA">0.85</span></div>
+          <input type="range" id="topA" min="0" max="1" step="0.01" value="0.85" style="grid-column:1/-1">
+        </div>
+
+        <div class="row">
+          <div><label>上の光 広がり</label><div class="tiny">top glow spread</div></div>
+          <div class="val"><span id="vTopR">60</span>%</div>
+          <input type="range" id="topR" min="35" max="85" step="1" value="60" style="grid-column:1/-1">
+        </div>
+
+        <div class="row">
+          <div><label>砂岩 強さ</label><div class="tiny">sand intensity</div></div>
+          <div class="val"><span id="vSandA">0.30</span></div>
+          <input type="range" id="sandA" min="0" max="0.7" step="0.01" value="0.30" style="grid-column:1/-1">
+        </div>
+
+        <div class="row">
+          <div><label>霧（白モヤ）</label><div class="tiny">mist</div></div>
+          <div class="val"><span id="vMist">0.22</span></div>
+          <input type="range" id="mist" min="0" max="0.65" step="0.01" value="0.22" style="grid-column:1/-1">
+        </div>
+
+        <div class="row">
+          <div><label>奥行き（下ほど暗い）</label><div class="tiny">depth shading</div></div>
+          <div class="val"><span id="vDepth">0.12</span></div>
+          <input type="range" id="depth" min="0" max="0.35" step="0.01" value="0.12" style="grid-column:1/-1">
+        </div>
+
+        <div class="row">
+          <div><label>彩度</label><div class="tiny">saturation</div></div>
+          <div class="val"><span id="vSat">1.00</span></div>
+          <input type="range" id="sat" min="0.75" max="1.5" step="0.01" value="1.00" style="grid-column:1/-1">
+        </div>
+
+        <div class="row">
+          <div><label>コントラスト</label><div class="tiny">contrast</div></div>
+          <div class="val"><span id="vCon">1.00</span></div>
+          <input type="range" id="con" min="0.85" max="1.35" step="0.01" value="1.00" style="grid-column:1/-1">
+        </div>
+
+        <div class="btns">
+          <button class="btn" id="btnRandom">🎲 ランダム</button>
+          <button class="btn primary" id="btnCopy">📋 CSSコピー</button>
+        </div>
+
+        <div>
+          <div class="tiny" style="margin:10px 0 6px;">↓ ゲームに貼る（.beyond を置換）</div>
+          <textarea id="cssOut" spellcheck="false"></textarea>
+        </div>
+
+        <div class="note">
+          あなたのゲームで置き換える場所：<br/>
+          <span class="tiny">.beyond{ background: ...; opacity:0; transform:...; transition:...; }</span><br/>
+          👉 このサイトの出力をそのまま <b>.beyond</b> に貼ってOK。
+        </div>
+
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  const beyond = $("beyond");
+  const cssOut = $("cssOut");
+
+  const preset = $("preset");
+  const cTop   = $("cTop");
+  const cSand  = $("cSand");
+  const cBase0 = $("cBase0");
+  const cBase1 = $("cBase1");
+
+  const topA  = $("topA");
+  const topR  = $("topR");
+  const sandA = $("sandA");
+  const mist  = $("mist");
+  const depth = $("depth");
+  const sat   = $("sat");
+  const con   = $("con");
+
+  const vTopA = $("vTopA");
+  const vTopR = $("vTopR");
+  const vSandA= $("vSandA");
+  const vMist = $("vMist");
+  const vDepth= $("vDepth");
+  const vSat  = $("vSat");
+  const vCon  = $("vCon");
+
+  function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+  function hexToRgb(hex){
+    const h = hex.replace("#","").trim();
+    const v = h.length === 3 ? h.split("").map(ch => ch+ch).join("") : h;
+    const n = parseInt(v, 16);
+    return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+  }
+  function rgba(hex, a){
+    const {r,g,b} = hexToRgb(hex);
+    return `rgba(${r}, ${g}, ${b}, ${clamp01(a).toFixed(3)})`;
+  }
+
+  function buildBg(){
+    // 5レイヤー：霧 / 上の光 / 砂岩 / 奥行き / ベース
+    const TOP  = rgba(cTop.value,  parseFloat(topA.value));
+    const SAND = rgba(cSand.value, parseFloat(sandA.value));
+    const MIST = rgba("#ffffff",   parseFloat(mist.value));
+    const DEP  = rgba("#081225",   parseFloat(depth.value));
+    const R = parseInt(topR.value, 10);
+
+    const bg = [
+      `radial-gradient(900px 520px at 52% 52%, ${MIST}, transparent 62%)`,
+      `radial-gradient(700px 320px at 50% 18%, ${TOP}, transparent ${R}%)`,
+      `radial-gradient(900px 520px at 60% 95%, ${SAND}, transparent 62%)`,
+      `linear-gradient(180deg, transparent, ${DEP})`,
+      `linear-gradient(180deg, ${cBase0.value}, ${cBase1.value})`
+    ].join(",\n        ");
+
+    return `background:\n        ${bg};`;
+  }
+
+  function apply(){
+    vTopA.textContent  = parseFloat(topA.value).toFixed(2);
+    vTopR.textContent  = topR.value;
+    vSandA.textContent = parseFloat(sandA.value).toFixed(2);
+    vMist.textContent  = parseFloat(mist.value).toFixed(2);
+    vDepth.textContent = parseFloat(depth.value).toFixed(2);
+    vSat.textContent   = parseFloat(sat.value).toFixed(2);
+    vCon.textContent   = parseFloat(con.value).toFixed(2);
+
+    const bgcss = buildBg();
+    beyond.style.cssText = bgcss + `\nfilter: saturate(${sat.value}) contrast(${con.value});`;
+
+    cssOut.value =
+`.beyond{
+  position:absolute; inset:0;
+  ${bgcss.replace(/\n/g,"\n  ")}
+  opacity:0;
+  transform: scale(1.02);
+  transition: opacity .8s ease, transform .8s ease;
+  filter: saturate(${sat.value}) contrast(${con.value});
+}
+
+/* 既存のこれもそのままでOK
+.stageInner.open .beyond{ opacity:1; transform: scale(1.0); }
+*/`;
+  }
+
+  function setPreset(name){
+    if(name === "mystic"){
+      cTop.value="#ffffff"; cSand.value="#d6bea0"; cBase0.value="#ffffff"; cBase1.value="#ffffff";
+      topA.value=0.85; topR.value=60; sandA.value=0.30; mist.value=0.22; depth.value=0.12; sat.value=1.00; con.value=1.00;
+    }
+    if(name === "heaven"){
+      cTop.value="#ffffff"; cSand.value="#cfe8ff"; cBase0.value="#ffffff"; cBase1.value="#f4fbff";
+      topA.value=0.95; topR.value=72; sandA.value=0.18; mist.value=0.30; depth.value=0.06; sat.value=1.05; con.value=1.02;
+    }
+    if(name === "cave"){
+      cTop.value="#fff7e6"; cSand.value="#d2a679"; cBase0.value="#ffffff"; cBase1.value="#fff2e3";
+      topA.value=0.70; topR.value=55; sandA.value=0.44; mist.value=0.14; depth.value=0.18; sat.value=1.08; con.value=1.06;
+    }
+    if(name === "sunset"){
+      cTop.value="#ffe3e3"; cSand.value="#ff922b"; cBase0.value="#ffe8cc"; cBase1.value="#eebefa";
+      topA.value=0.78; topR.value=68; sandA.value=0.30; mist.value=0.18; depth.value=0.14; sat.value=1.18; con.value=1.08;
+    }
+    apply();
+  }
+
+  function rand(min,max){ return min + Math.random()*(max-min); }
+  function randInt(min,max){ return Math.floor(min + Math.random()*(max-min+1)); }
+  function randomHexBright(){
+    const r = randInt(190,255), g = randInt(190,255), b = randInt(190,255);
+    return "#" + [r,g,b].map(x => x.toString(16).padStart(2,"0")).join("");
+  }
+  function randomHexSand(){
+    const r = randInt(190,240), g = randInt(160,215), b = randInt(120,185);
+    return "#" + [r,g,b].map(x => x.toString(16).padStart(2,"0")).join("");
+  }
+
+  $("btnRandom").addEventListener("click", () => {
+    // 破綻しない範囲でランダム
+    cTop.value  = "#ffffff";
+    cSand.value = randomHexSand();
+    cBase0.value= randomHexBright();
+    cBase1.value= randomHexBright();
+
+    topA.value  = rand(0.55, 1.00).toFixed(2);
+    topR.value  = randInt(45, 80);
+    sandA.value = rand(0.10, 0.55).toFixed(2);
+    mist.value  = rand(0.06, 0.34).toFixed(2);
+    depth.value = rand(0.05, 0.22).toFixed(2);
+    sat.value   = rand(0.92, 1.25).toFixed(2);
+    con.value   = rand(0.92, 1.15).toFixed(2);
+    apply();
+  });
+
+  $("btnCopy").addEventListener("click", async () => {
+    try{
+      await navigator.clipboard.writeText(cssOut.value);
+      const btn = $("btnCopy");
+      const old = btn.textContent;
+      btn.textContent = "✓ コピーした";
+      setTimeout(() => btn.textContent = old, 900);
+    }catch(e){
+      alert("コピーできなかった。手動でテキストを選択してコピーして。");
+    }
+  });
+
+  preset.addEventListener("change", () => setPreset(preset.value));
+
+  const inputs = [cTop,cSand,cBase0,cBase1,topA,topR,sandA,mist,depth,sat,con];
+  inputs.forEach(el => el.addEventListener("input", apply));
+
+  // init
+  setPreset("mystic");
+})();
+</script>
+</body>
+</html>
