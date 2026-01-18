@@ -435,7 +435,6 @@
   }
 
   function buildBg(){
-    // 5レイヤー：霧 / 上の光 / 砂岩 / 奥行き / ベース
     const TOP  = rgba(cTop.value,  parseFloat(topA.value));
     const SAND = rgba(cSand.value, parseFloat(sandA.value));
     const MIST = rgba("#ffffff",   parseFloat(mist.value));
@@ -512,7 +511,6 @@
   }
 
   $("btnRandom").addEventListener("click", () => {
-    // 破綻しない範囲でランダム
     cTop.value  = "#ffffff";
     cSand.value = randomHexSand();
     cBase0.value= randomHexBright();
@@ -545,7 +543,6 @@
   const inputs = [cTop,cSand,cBase0,cBase1,topA,topR,sandA,mist,depth,sat,con];
   inputs.forEach(el => el.addEventListener("input", apply));
 
-  // init
   setPreset("mystic");
 })();
 </script>
